@@ -347,15 +347,7 @@
     }
     footer a:hover { color: var(--ink); }
 
-    .reveal { opacity: 1; }
-    html.js .js-reveal {
-      opacity: 0;
-      transform: translateY(18px);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html.js .js-reveal { opacity: 1; transform: none; }
-    }
+    .js-reveal { opacity: 1; transform: none; }
   </style>
 </head>
 <body>
@@ -491,27 +483,35 @@
   </footer>
 
   <script>
-    document.documentElement.classList.add("js");
-
     if (typeof gsap !== "undefined") {
       gsap.registerPlugin(ScrollTrigger);
 
-      gsap.from(".hero .js-reveal", {
-        opacity: 0,
-        y: 20,
-        duration: 0.8,
-        stagger: 0.08,
-        ease: "power3.out",
-      });
-
-      gsap.utils.toArray(".section .js-reveal").forEach((el) => {
-        gsap.to(el, {
+      // fromTo evita o bug de terminar em opacity 0
+      gsap.fromTo(
+        ".hero .js-reveal",
+        { opacity: 0, y: 20 },
+        {
           opacity: 1,
           y: 0,
-          duration: 0.65,
-          ease: "power2.out",
-          scrollTrigger: { trigger: el, start: "top 90%" },
-        });
+          duration: 0.8,
+          stagger: 0.08,
+          ease: "power3.out",
+          clearProps: "transform",
+        }
+      );
+
+      gsap.utils.toArray(".section .js-reveal").forEach((el) => {
+        gsap.fromTo(
+          el,
+          { opacity: 0, y: 18 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.65,
+            ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 90%" },
+          }
+        );
       });
     }
   </script>
