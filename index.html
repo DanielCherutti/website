@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Three.js (global UMD) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
+  <!-- Three.js UMD (0.160 ainda publica three.min.js; 0.170+ removeu o build UMD) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <!-- GSAP + ScrollTrigger -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
@@ -242,198 +242,165 @@
      * =========================================================
      */
 
-    // Registra o plugin de scroll do GSAP
-    gsap.registerPlugin(ScrollTrigger);
+    // Guarda: se o CDN falhar, avisa no console em vez de quebrar em silêncio
+    if (typeof THREE === "undefined" || typeof gsap === "undefined") {
+      console.error("Libs não carregaram. Confira os CDNs de Three.js / GSAP.");
+    } else {
+      // Registra o plugin de scroll do GSAP
+      gsap.registerPlugin(ScrollTrigger);
 
-    /* -------------------------
-     * 1) Setup básico Three.js
-     * ------------------------- */
-    const canvas = document.getElementById("webgl");
+      /* -------------------------
+       * 1) Setup básico Three.js
+       * ------------------------- */
+      const canvas = document.getElementById("webgl");
 
-    // Renderer: usa o canvas full-viewport e liga antialias
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0); // transparente — o CSS cuida do fundo
-
-    // Cena e câmera perspectiva
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      100
-    );
-    // Distância inicial (z). ScrollTrigger vai animar esse valor depois.
-    camera.position.set(0, 0.2, 6.5);
-
-    /* -------------------------
-     * 2) Objeto 3D central
-     * ------------------------- */
-    // TorusKnot: forma rica em silhueta (bom para scrollytelling)
-    const geometry = new THREE.TorusKnotGeometry(1, 0.32, 220, 28);
-
-    // Material com um pouco de metal/brilho para reagir à luz
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xd8ece4,
-      metalness: 0.55,
-      roughness: 0.28,
-      emissive: 0x0a1f1a,
-      emissiveIntensity: 0.15,
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    // Wireframe suave por cima — reforça o look "creative coding"
-    const wire = new THREE.Mesh(
-      geometry,
-      new THREE.MeshBasicMaterial({
-        color: 0x3fd0a8,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.12,
-      })
-    );
-    mesh.add(wire);
-
-    /* -------------------------
-     * 3) Iluminação com volume
-     * ------------------------- */
-    const ambient = new THREE.AmbientLight(0xb8c8c0, 0.45);
-    scene.add(ambient);
-
-    const key = new THREE.DirectionalLight(0xffffff, 1.35);
-    key.position.set(4, 6, 5);
-    scene.add(key);
-
-    const fill = new THREE.DirectionalLight(0xf0a35e, 0.55);
-    fill.position.set(-5, -2, 3);
-    scene.add(fill);
-
-    const rim = new THREE.PointLight(0x3fd0a8, 1.2, 20);
-    rim.position.set(-2, 3, -3);
-    scene.add(rim);
-
-    /* -------------------------
-     * 4) Scroll → estado 3D
-     * -------------------------
-     * Em vez de animar o mesh “na mão” no tick, criamos um objeto
-     * proxy (`scrollState`) e deixamos o GSAP interpolar esses valores
-     * conforme o progresso do scroll. O loop de render só lê o estado.
-     */
-    const scrollState = {
-      posX: 0,
-      posY: 0,
-      rotX: 0.25,
-      rotY: 0.4,
-      camZ: 6.5,
-    };
-
-    // Timeline amarrada ao scroll da página inteira
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: ".content",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 1, // suaviza o “atraso” do objeto em relação ao scroll
-        // markers: true, // descomente para depurar
-      },
-    });
-
-    // Fase 1: do centro → lado direito + giro nos eixos
-    tl.to(scrollState, {
-      posX: 1.8,
-      posY: 0.35,
-      rotX: Math.PI * 0.85,
-      rotY: Math.PI * 1.4,
-      camZ: 5.4,
-      ease: "none",
-      duration: 1,
-    });
-
-    // Fase 2: cruza para a esquerda + zoom da câmera
-    tl.to(scrollState, {
-      posX: -1.6,
-      posY: -0.15,
-      rotX: Math.PI * 1.6,
-      rotY: Math.PI * 2.4,
-      camZ: 3.8,
-      ease: "none",
-      duration: 1,
-    });
-
-    /* -------------------------
-     * 5) Loop de render
-     * ------------------------- */
-    // Rotação idle leve — mesmo parado no topo, o objeto “vive”
-    let idle = 0;
-
-    function render() {
-      idle += 0.004;
-
-      // Aplica o estado controlado pelo scroll
-      mesh.position.x = scrollState.posX;
-      mesh.position.y = scrollState.posY + Math.sin(idle) * 0.08;
-      mesh.rotation.x = scrollState.rotX + idle * 0.15;
-      mesh.rotation.y = scrollState.rotY + idle * 0.25;
-      camera.position.z = scrollState.camZ;
-
-      renderer.render(scene, camera);
-      requestAnimationFrame(render);
-    }
-    render();
-
-    /* -------------------------
-     * 6) Responsividade
-     * ------------------------- */
-    function onResize() {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-
-      // Mantém o canvas 100% da viewport
+      // Renderer: usa o canvas full-viewport e liga antialias
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+      });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(w, h);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x000000, 0); // transparente — o CSS cuida do fundo
 
-      // Recalcula aspect da câmera para não distorcer o objeto
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      // Cena e câmera perspectiva
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      // Distância inicial (z). ScrollTrigger vai animar esse valor depois.
+      camera.position.set(0, 0.15, 5.2);
 
-      // Em telas estreitas, reduz o deslocamento lateral do mesh
-      ScrollTrigger.refresh();
+      /* -------------------------
+       * 2) Objeto 3D central
+       * ------------------------- */
+      // TorusKnot: forma rica em silhueta (bom para scrollytelling)
+      const geometry = new THREE.TorusKnotGeometry(1.15, 0.38, 240, 32);
+
+      // Material claro + emissive pra ficar legível no fundo escuro
+      const material = new THREE.MeshStandardMaterial({
+        color: 0xeaf6f0,
+        metalness: 0.35,
+        roughness: 0.22,
+        emissive: 0x1a4a3a,
+        emissiveIntensity: 0.35,
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      // Wireframe por cima — reforça o look "creative coding"
+      const wire = new THREE.Mesh(
+        geometry,
+        new THREE.MeshBasicMaterial({
+          color: 0x3fd0a8,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.22,
+        })
+      );
+      mesh.add(wire);
+
+      /* -------------------------
+       * 3) Iluminação com volume
+       * ------------------------- */
+      const ambient = new THREE.AmbientLight(0xc8ddd4, 0.7);
+      scene.add(ambient);
+
+      const key = new THREE.DirectionalLight(0xffffff, 1.8);
+      key.position.set(4, 6, 5);
+      scene.add(key);
+
+      const fill = new THREE.DirectionalLight(0xf0a35e, 0.9);
+      fill.position.set(-5, -2, 3);
+      scene.add(fill);
+
+      const rim = new THREE.PointLight(0x3fd0a8, 2.2, 24);
+      rim.position.set(-2, 3, -3);
+      scene.add(rim);
+
+      /* -------------------------
+       * 4) Scroll → estado 3D
+       * -------------------------
+       * Proxy (`scrollState`) interpolado pelo GSAP conforme o scroll.
+       * O loop de render só lê esses valores a cada frame.
+       */
+      const isMobile = window.innerWidth <= 700;
+      const scrollState = {
+        posX: 0,
+        posY: 0,
+        rotX: 0.35,
+        rotY: 0.55,
+        camZ: 5.2,
+      };
+
+      // Amplitudes maiores no desktop pra o efeito ser óbvio
+      const path = isMobile
+        ? [
+            { posX: 0.7, posY: 0.55, rotX: Math.PI * 1.0, rotY: Math.PI * 1.6, camZ: 4.6 },
+            { posX: -0.55, posY: -0.2, rotX: Math.PI * 1.9, rotY: Math.PI * 2.8, camZ: 3.4 },
+          ]
+        : [
+            { posX: 2.4, posY: 0.45, rotX: Math.PI * 1.1, rotY: Math.PI * 1.8, camZ: 4.4 },
+            { posX: -2.2, posY: -0.25, rotX: Math.PI * 2.0, rotY: Math.PI * 3.0, camZ: 2.9 },
+          ];
+
+      // Timeline amarrada ao scroll da página inteira
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".content",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.6, // resposta mais direta ao scroll
+        },
+      });
+
+      // Fase 1: centro → lado + giro
+      tl.to(scrollState, { ...path[0], ease: "none", duration: 1 });
+      // Fase 2: cruza + zoom da câmera
+      tl.to(scrollState, { ...path[1], ease: "none", duration: 1 });
+
+      /* -------------------------
+       * 5) Loop de render
+       * ------------------------- */
+      let idle = 0;
+
+      function render() {
+        idle += 0.008;
+
+        mesh.position.x = scrollState.posX;
+        mesh.position.y = scrollState.posY + Math.sin(idle) * 0.12;
+        mesh.rotation.x = scrollState.rotX + idle * 0.35;
+        mesh.rotation.y = scrollState.rotY + idle * 0.55;
+        camera.position.z = scrollState.camZ;
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+      render();
+
+      /* -------------------------
+       * 6) Responsividade
+       * ------------------------- */
+      function onResize() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(w, h);
+
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+
+        ScrollTrigger.refresh();
+      }
+
+      window.addEventListener("resize", onResize);
     }
-
-    window.addEventListener("resize", onResize);
-
-    // Ajuste inicial para mobile: trajetória X menor
-    ScrollTrigger.matchMedia({
-      "(max-width: 700px)": function () {
-        scrollState.posX = 0;
-        // Reinicia a timeline com amplitudes menores
-        tl.clear();
-        tl.to(scrollState, {
-          posX: 0.55,
-          posY: 0.5,
-          rotX: Math.PI * 0.85,
-          rotY: Math.PI * 1.4,
-          camZ: 5.8,
-          ease: "none",
-          duration: 1,
-        }).to(scrollState, {
-          posX: -0.45,
-          posY: -0.1,
-          rotX: Math.PI * 1.6,
-          rotY: Math.PI * 2.4,
-          camZ: 4.2,
-          ease: "none",
-          duration: 1,
-        });
-      },
-    });
   </script>
 </body>
 </html>
