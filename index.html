@@ -9,23 +9,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 
   <style>
     :root {
-      --bg: #0a0c10;
-      --ink: #f4f1ea;
-      --muted: #9a9a92;
-      --line: rgba(244, 241, 234, 0.12);
-      --accent: #9fd8c3;
-      --accent-strong: #c8f0df;
-      --warm: #d4b896;
+      --bg: #e7ebe8;
+      --bg-deep: #121512;
+      --ink: #141814;
+      --muted: #5a615c;
+      --line: rgba(20, 24, 20, 0.12);
+      --accent: #1f6b4f;
+      --paper: #f3f6f4;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     html { scroll-behavior: auto; }
 
     body {
@@ -39,127 +38,172 @@
 
     a { color: inherit; text-decoration: none; }
 
-    #webgl {
-      position: fixed;
+    /* Plano visual full-bleed do hero */
+    .hero-plane {
+      position: absolute;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
       z-index: 0;
-      display: block;
-      pointer-events: none;
-    }
-
-    .wash {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
       background:
-        radial-gradient(ellipse 55% 45% at 75% 35%, rgba(159, 216, 195, 0.16), transparent 60%),
-        radial-gradient(ellipse 40% 35% at 15% 80%, rgba(212, 184, 150, 0.08), transparent 55%),
-        linear-gradient(180deg, rgba(10, 12, 16, 0.2) 0%, rgba(10, 12, 16, 0.55) 55%, rgba(10, 12, 16, 0.92) 100%);
+        linear-gradient(115deg, #0f1a15 0%, #1a2e26 42%, #24352c 68%, #3d4f42 100%);
+      overflow: hidden;
     }
 
-    .content { position: relative; z-index: 2; }
+    .hero-plane::before {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(ellipse 50% 40% at 70% 30%, rgba(215, 235, 226, 0.18), transparent 55%),
+        radial-gradient(ellipse 35% 30% at 20% 80%, rgba(31, 107, 79, 0.45), transparent 50%);
+      animation: drift 18s ease-in-out infinite alternate;
+    }
 
-    section {
-      min-height: 100vh;
+    .hero-plane::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        -12deg,
+        transparent 0,
+        transparent 48px,
+        rgba(247, 244, 238, 0.03) 48px,
+        rgba(247, 244, 238, 0.03) 49px
+      );
+      opacity: 0.7;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(-3%, 2%, 0) scale(1.06); }
+    }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      padding: clamp(2.5rem, 8vw, 7rem);
+      padding: 1.1rem clamp(1.25rem, 4vw, 3rem);
+      mix-blend-mode: difference;
+      color: #f7f4ee;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 600;
     }
+
+    .nav a:hover { opacity: 0.7; }
 
     .hero {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
       align-items: flex-end;
-      padding-bottom: clamp(4rem, 14vh, 8rem);
+      padding: clamp(2rem, 6vw, 4rem);
+      padding-bottom: clamp(3.5rem, 10vh, 6rem);
+      color: #f7f4ee;
+      overflow: hidden;
     }
 
-    .hero-inner { max-width: min(38rem, 94vw); }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: min(44rem, 100%);
+    }
 
     .seal {
-      font-size: 0.68rem;
-      letter-spacing: 0.32em;
+      font-size: 0.7rem;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
-      color: var(--accent);
       font-weight: 600;
-      margin-bottom: 1.5rem;
-      opacity: 0.9;
+      opacity: 0.7;
+      margin-bottom: 1.4rem;
     }
 
     .brand {
       font-family: "Instrument Serif", Georgia, serif;
       font-weight: 400;
-      font-size: clamp(3.6rem, 12vw, 8rem);
-      line-height: 0.9;
-      letter-spacing: -0.035em;
-      margin-bottom: 1.6rem;
+      font-size: clamp(3.8rem, 13vw, 8.5rem);
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.5rem;
     }
 
     .brand i {
       font-style: italic;
-      color: var(--accent-strong);
+      color: #b8e0cf;
     }
 
-    h1 {
-      font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+    .hero h1 {
+      font-size: clamp(1.15rem, 2.4vw, 1.5rem);
       font-weight: 500;
       line-height: 1.35;
-      max-width: 18ch;
-      margin-bottom: 0.9rem;
+      max-width: 16ch;
+      margin-bottom: 0.85rem;
     }
 
-    .lead {
-      color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.65;
-      max-width: 32ch;
+    .hero .lead {
+      color: rgba(247, 244, 238, 0.7);
+      font-size: 1.02rem;
+      line-height: 1.6;
+      max-width: 30ch;
     }
 
     .cta {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.9rem;
-      margin-top: 2.25rem;
+      gap: 0.75rem;
+      margin-top: 2rem;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
-      padding: 0.9rem 1.4rem;
+      padding: 0.85rem 1.3rem;
       font-size: 0.9rem;
       font-weight: 600;
-      transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
     }
 
-    .btn:hover { transform: translateY(-2px); }
+    .btn:hover { transform: translateY(-1px); }
 
-    .btn-main {
-      background: var(--ink);
-      color: var(--bg);
+    .btn-light {
+      background: #f7f4ee;
+      color: #121512;
     }
 
-    .btn-main:hover { background: #fff; }
+    .btn-light:hover { background: #fff; }
 
-    .btn-soft {
-      border: 1px solid var(--line);
-      color: var(--ink);
-      background: transparent;
+    .btn-ghost {
+      border: 1px solid rgba(247, 244, 238, 0.35);
+      color: #f7f4ee;
     }
 
-    .btn-soft:hover {
-      border-color: var(--accent);
-      color: var(--accent-strong);
+    .btn-ghost:hover {
+      border-color: #b8e0cf;
+      color: #b8e0cf;
     }
 
-    .copy {
-      max-width: min(32rem, 92vw);
+    .section {
+      padding: clamp(4.5rem, 12vh, 8rem) clamp(1.5rem, 6vw, 5rem);
     }
 
-    .copy.right { margin-left: auto; }
+    .section-dark {
+      background: var(--bg-deep);
+      color: #f7f4ee;
+    }
+
+    .section-dark .muted { color: rgba(247, 244, 238, 0.62); }
+    .section-dark .kicker { color: #9fd4ba; }
+    .section-dark .rule { border-color: rgba(247, 244, 238, 0.12); }
 
     .kicker {
-      font-size: 0.66rem;
-      letter-spacing: 0.28em;
+      font-size: 0.68rem;
+      letter-spacing: 0.26em;
       text-transform: uppercase;
       color: var(--accent);
       font-weight: 600;
@@ -169,240 +213,275 @@
     h2 {
       font-family: "Instrument Serif", Georgia, serif;
       font-weight: 400;
-      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
       line-height: 1.02;
-      letter-spacing: -0.025em;
-      margin-bottom: 1.1rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
     }
 
-    .copy p {
+    .muted {
       color: var(--muted);
       font-size: 1.05rem;
-      line-height: 1.75;
-      max-width: 34ch;
+      line-height: 1.7;
+      max-width: 36ch;
     }
 
-    .copy ul {
-      list-style: none;
-      margin-top: 1.4rem;
+    .work-grid {
       display: grid;
-      gap: 0.5rem;
+      gap: 0;
+      margin-top: 3rem;
     }
 
-    .copy li {
-      color: var(--ink);
-      font-size: 0.95rem;
-      opacity: 0.92;
-    }
-
-    .copy li::before {
-      content: "— ";
-      color: var(--accent);
-    }
-
-    .warm { color: var(--warm); }
-
-    .stack {
-      width: min(42rem, 100%);
-    }
-
-    .stack header p {
-      color: var(--muted);
-      margin-top: 0.6rem;
-      line-height: 1.65;
-      max-width: 34ch;
-    }
-
-    .stack-line {
-      margin-top: 1.75rem;
-      padding-top: 1.1rem;
+    .work-item {
+      display: grid;
+      grid-template-columns: 5.5rem 1fr;
+      gap: 1.25rem;
+      padding: 1.75rem 0;
       border-top: 1px solid var(--line);
     }
 
-    .stack-line h3 {
-      font-size: 0.66rem;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.45rem;
-      font-weight: 600;
+    .section-dark .work-item { border-color: rgba(247, 244, 238, 0.12); }
+
+    .work-item:last-child { border-bottom: 1px solid var(--line); }
+    .section-dark .work-item:last-child { border-bottom-color: rgba(247, 244, 238, 0.12); }
+
+    .work-num {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: 1.4rem;
+      opacity: 0.45;
+      padding-top: 0.2rem;
     }
 
-    .stack-line p {
-      color: var(--ink);
-      font-size: 1.05rem;
-      line-height: 1.55;
-      max-width: none;
+    .work-item h3 {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: clamp(1.7rem, 3.5vw, 2.3rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.55rem;
     }
 
-    .links {
+    .work-item p {
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 42ch;
+      font-size: 1rem;
+    }
+
+    .section-dark .work-item p { color: rgba(247, 244, 238, 0.62); }
+
+    .work-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.4rem;
-      margin-top: 1.8rem;
-    }
-
-    .links a {
+      gap: 0.45rem 0.9rem;
+      margin-top: 0.9rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
       font-weight: 600;
-      border-bottom: 1px solid rgba(159, 216, 195, 0.45);
-      padding-bottom: 0.15rem;
-      transition: color 0.2s ease, border-color 0.2s ease;
     }
 
-    .links a:hover {
-      color: var(--accent-strong);
-      border-color: var(--accent-strong);
+    .section-dark .work-tags { color: #9fd4ba; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
     }
+
+    @media (min-width: 860px) {
+      .split {
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: end;
+      }
+
+      .work-item {
+        grid-template-columns: 6rem 1fr;
+        gap: 2rem;
+      }
+    }
+
+    .stack-list {
+      margin-top: 2rem;
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .stack-row {
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .stack-row h3 {
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    .stack-row p {
+      font-size: 1.08rem;
+      line-height: 1.55;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-top: 1.75rem;
+    }
+
+    .contact-links a {
+      font-weight: 600;
+      border-bottom: 1px solid currentColor;
+      padding-bottom: 0.12rem;
+      opacity: 0.9;
+    }
+
+    .contact-links a:hover { opacity: 0.55; }
 
     footer {
-      position: relative;
-      z-index: 2;
-      padding: 1.6rem clamp(2rem, 6vw, 5rem) 2.2rem;
+      padding: 1.5rem clamp(1.5rem, 6vw, 5rem) 2rem;
       display: flex;
       justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
       border-top: 1px solid var(--line);
-      color: var(--muted);
       font-size: 0.78rem;
       letter-spacing: 0.04em;
-      background: rgba(10, 12, 16, 0.85);
+      color: var(--muted);
+      background: var(--paper);
     }
 
-    footer a:hover { color: var(--accent-strong); }
-
-    @media (max-width: 720px) {
-      section {
-        align-items: flex-end;
-        padding-bottom: 12vh;
-      }
-      .copy.right { margin-left: 0; }
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .btn { transition: none; }
+      .hero-plane::before { animation: none; }
+      .reveal { opacity: 1; transform: none; }
     }
   </style>
 </head>
 <body>
-  <canvas id="webgl" aria-hidden="true"></canvas>
-  <div class="wash" aria-hidden="true"></div>
+  <nav class="nav">
+    <a href="#top">Daniel Cherutti</a>
+    <a href="#contato">Contato</a>
+  </nav>
 
-  <main class="content">
-    <section class="hero" id="top">
-      <div class="hero-inner">
-        <p class="seal">Daniel Tech</p>
-        <p class="brand">Daniel<br />Cherutti<i>.</i></p>
-        <h1>Código e infra que sustentam o negócio.</h1>
-        <p class="lead">Developer + infra — do deploy à VM, do PABX ao produto.</p>
-        <div class="cta">
-          <a class="btn btn-main" href="#trabalho">Ver trabalho</a>
-          <a class="btn btn-soft" href="#contato">Contato</a>
+  <header class="hero" id="top">
+    <div class="hero-plane" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <p class="seal reveal">Daniel Tech</p>
+      <p class="brand reveal">Daniel<br />Cherutti<i>.</i></p>
+      <h1 class="reveal">Código e infra que sustentam o negócio.</h1>
+      <p class="lead reveal">Developer + infra — do deploy à VM, do PABX ao produto.</p>
+      <div class="cta reveal">
+        <a class="btn btn-light" href="#trabalho">Ver trabalho</a>
+        <a class="btn btn-ghost" href="#contato">Contato</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" id="trabalho">
+    <p class="kicker reveal">Trabalho</p>
+    <h2 class="reveal">O que eu construo</h2>
+    <p class="muted reveal">Produto, telefonia, integrações e operação — o fio que liga código à máquina.</p>
+
+    <div class="work-grid">
+      <article class="work-item reveal">
+        <span class="work-num">01</span>
+        <div>
+          <h3>Filmavys</h3>
+          <p>Produto full-stack sob pressão real: app + API, WhatsApp com workers, billing e operação contínua em produção.</p>
+          <div class="work-tags"><span>TypeScript</span><span>Workers</span><span>Produto</span></div>
         </div>
-      </div>
-    </section>
+      </article>
 
-    <section id="trabalho">
-      <div class="copy">
-        <p class="kicker">01 · Produto</p>
-        <h2>Filmavys</h2>
-        <p>Produto full-stack sob pressão real: app + API, WhatsApp com workers, billing e operação contínua.</p>
-        <ul>
-          <li>TypeScript end-to-end</li>
-          <li>Filas, workers e notificações</li>
-          <li>Ciclo curto com review e deploy</li>
-        </ul>
-      </div>
-    </section>
+      <article class="work-item reveal">
+        <span class="work-num">02</span>
+        <div>
+          <h3>Telefonia &amp; omnichannel</h3>
+          <p>FreeSWITCH, New Omni, filas, webphone e provisionamento de telefones IP — onde a ligação precisa fechar com o sistema.</p>
+          <div class="work-tags"><span>FreeSWITCH</span><span>PABX</span><span>Provisionamento</span></div>
+        </div>
+      </article>
 
-    <section id="telefonia">
-      <div class="copy right">
-        <p class="kicker">02 · Omnichannel</p>
-        <h2>Telefonia<br />que escala</h2>
-        <p>Omnichannel e PABX: FreeSWITCH, New Omni, filas, webphone e provisionamento de IP phones.</p>
-        <ul>
-          <li>Rotas, filas e transferências</li>
-          <li>Provisionamento de endpoints</li>
-          <li>Diagnóstico em produção</li>
-        </ul>
-      </div>
-    </section>
+      <article class="work-item reveal">
+        <span class="work-num">03</span>
+        <div>
+          <h3>CRM &amp; integrações</h3>
+          <p>Pontes entre telefonia, CRM e operação comercial — Syonet, discagem, leads e fluxos sob medida.</p>
+          <div class="work-tags"><span>Syonet</span><span>APIs</span><span>Leads</span></div>
+        </div>
+      </article>
 
-    <section id="crm">
-      <div class="copy">
-        <p class="kicker">03 · Integrações</p>
-        <h2>CRM no<br />fluxo certo</h2>
-        <p>Pontes entre telefonia, CRM e operação — Syonet, discagem, leads e sistemas sob medida.</p>
-        <ul>
-          <li>Integrações Syonet e leads</li>
-          <li>CRM para concessionárias</li>
-          <li>APIs voz · chat · cadastro</li>
-        </ul>
-      </div>
-    </section>
+      <article class="work-item reveal">
+        <span class="work-num">04</span>
+        <div>
+          <h3>Infra &amp; operação</h3>
+          <p>Proxmox, VMs, monitoramento, VPN e automação — o lado que ninguém vê até cair.</p>
+          <div class="work-tags"><span>Proxmox</span><span>Linux</span><span>Docker</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
 
-    <section id="infra">
-      <div class="copy right">
-        <p class="kicker">04 · Operação</p>
-        <h2>Infra que<br />aguenta</h2>
-        <p>Proxmox, VMs, monitoramento e automação — o lado que ninguém vê até cair.</p>
-        <ul>
-          <li>Hypervisor, backup e rede</li>
-          <li>Monitoramento de serviços</li>
-          <li>Docker, Linux, troubleshooting</li>
-        </ul>
+  <section class="section section-dark" id="stack">
+    <div class="split">
+      <div>
+        <p class="kicker reveal">Stack</p>
+        <h2 class="reveal">Ferramentas<br />de verdade</h2>
+        <p class="muted reveal">Sem parede de badges — o que aparece no trabalho diário.</p>
       </div>
-    </section>
-
-    <section id="stack">
-      <div class="stack">
-        <header>
-          <p class="kicker">Stack</p>
-          <h2>Ferramentas<br />de verdade</h2>
-          <p>O que aparece no trabalho diário.</p>
-        </header>
-        <div class="stack-line">
+      <div class="stack-list">
+        <div class="stack-row reveal">
           <h3>Linguagens</h3>
           <p>Go · TypeScript · Python · PHP · C# · Bash</p>
         </div>
-        <div class="stack-line">
+        <div class="stack-row reveal">
           <h3>Plataformas</h3>
           <p>Node · Vue / Quasar · React · FreeSWITCH · Postgres · Redis</p>
         </div>
-        <div class="stack-line">
+        <div class="stack-row reveal">
           <h3>Infra &amp; DevOps</h3>
           <p>Proxmox · Docker · Linux · VMware · Nginx · AWS · K8s · Grafana</p>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="sobre">
-      <div class="copy">
-        <p class="kicker">Sobre</p>
-        <h2>Entre o código<br />e a máquina</h2>
-        <p>
-          Ligo o sistema ao servidor — e o servidor ao negócio. Brasil,
-          <span class="warm">Daniel Tech</span>: software que sobe e infra que aguenta.
+  <section class="section" id="sobre">
+    <div class="split">
+      <div>
+        <p class="kicker reveal">Sobre</p>
+        <h2 class="reveal">Entre o código<br />e a máquina</h2>
+      </div>
+      <div>
+        <p class="muted reveal">
+          Ligo o sistema ao servidor — e o servidor ao negócio. Brasil, Daniel Tech:
+          software que sobe e infra que aguenta.
         </p>
-        <p style="margin-top: 1rem;">
+        <p class="muted reveal" style="margin-top: 1rem;">
           Agora aprofundando Kubernetes, AWS, Go e .NET — sem largar o chão de produção.
         </p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="contato">
-      <div class="copy right">
-        <p class="kicker">Contato</p>
-        <h2>Vamos falar</h2>
-        <p>Projeto, integração, infra ou produto — me chama onde você já estiver.</p>
-        <div class="links">
-          <a href="https://github.com/DanielCherutti" target="_blank" rel="noopener">GitHub</a>
-          <a href="https://www.linkedin.com/in/daniel-machado-739180180/" target="_blank" rel="noopener">LinkedIn</a>
-          <a href="https://instagram.com/daniel.tech" target="_blank" rel="noopener">Instagram</a>
-        </div>
-      </div>
-    </section>
-  </main>
+  <section class="section section-dark" id="contato">
+    <p class="kicker reveal">Contato</p>
+    <h2 class="reveal">Vamos falar</h2>
+    <p class="muted reveal">Projeto, integração, infra ou produto — me chama onde você já estiver.</p>
+    <div class="contact-links reveal">
+      <a href="https://github.com/DanielCherutti" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/daniel-machado-739180180/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://instagram.com/daniel.tech" target="_blank" rel="noopener">Instagram</a>
+    </div>
+  </section>
 
   <footer>
     <span>Daniel Cherutti · Brasil</span>
@@ -410,221 +489,43 @@
   </footer>
 
   <script>
-    /**
-     * Cena: fitas de seda (tubes suaves) + névoa + partículas discretas.
-     * Visual limpo — sem grade, sem “bola tecnológica”.
-     */
-    if (typeof THREE === "undefined" || typeof gsap === "undefined") {
-      console.error("CDN Three/GSAP falhou.");
-    } else {
-      gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger);
 
-      const canvas = document.getElementById("webgl");
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        alpha: true,
-        powerPreference: "high-performance",
-      });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x000000, 0);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.05;
+    gsap.to(".hero .reveal", {
+      opacity: 1,
+      y: 0,
+      duration: 0.9,
+      stagger: 0.1,
+      ease: "power3.out",
+      delay: 0.08,
+    });
 
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x0a0c10, 0.038);
-
-      const camera = new THREE.PerspectiveCamera(
-        40,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        80
-      );
-      camera.position.set(0, 0.2, 8.5);
-
-      const world = new THREE.Group();
-      scene.add(world);
-
-      function makeRibbon(points, radius, color, opacity) {
-        const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.45);
-        const geo = new THREE.TubeGeometry(curve, 180, radius, 12, false);
-        const mat = new THREE.MeshPhysicalMaterial({
-          color,
-          metalness: 0.15,
-          roughness: 0.35,
-          transmission: 0.35,
-          thickness: 0.6,
-          transparent: true,
-          opacity,
-          emissive: color,
-          emissiveIntensity: 0.12,
-          clearcoat: 0.6,
-          clearcoatRoughness: 0.35,
-        });
-        return new THREE.Mesh(geo, mat);
-      }
-
-      const ribbonA = makeRibbon(
-        [
-          new THREE.Vector3(-4.5, -1.8, -1.2),
-          new THREE.Vector3(-2.2, 0.6, 0.4),
-          new THREE.Vector3(0.2, 1.4, -0.3),
-          new THREE.Vector3(2.4, 0.2, 0.8),
-          new THREE.Vector3(4.8, -1.2, -0.6),
-        ],
-        0.18,
-        0x9fd8c3,
-        0.85
-      );
-
-      const ribbonB = makeRibbon(
-        [
-          new THREE.Vector3(-4.2, 1.6, 0.8),
-          new THREE.Vector3(-1.8, 0.1, -0.6),
-          new THREE.Vector3(0.5, -1.1, 0.5),
-          new THREE.Vector3(2.6, 0.7, -0.2),
-          new THREE.Vector3(4.5, 1.3, 0.4),
-        ],
-        0.11,
-        0xd4b896,
-        0.7
-      );
-
-      const ribbonC = makeRibbon(
-        [
-          new THREE.Vector3(-3.8, -0.4, 1.4),
-          new THREE.Vector3(-1.2, 1.2, 0.2),
-          new THREE.Vector3(1.0, -0.2, -1.0),
-          new THREE.Vector3(3.2, -1.0, 0.3),
-          new THREE.Vector3(5.0, 0.4, 0.9),
-        ],
-        0.07,
-        0xe8efe9,
-        0.45
-      );
-
-      world.add(ribbonA, ribbonB, ribbonC);
-      world.position.set(1.4, 0.15, 0);
-
-      // Partículas bem discretas
-      const n = 180;
-      const pos = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) {
-        pos[i * 3] = (Math.random() - 0.5) * 16;
-        pos[i * 3 + 1] = (Math.random() - 0.5) * 10;
-        pos[i * 3 + 2] = (Math.random() - 0.5) * 10 - 2;
-      }
-      const dustGeo = new THREE.BufferGeometry();
-      dustGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-      const dust = new THREE.Points(
-        dustGeo,
-        new THREE.PointsMaterial({
-          color: 0xc8f0df,
-          size: 0.018,
-          transparent: true,
-          opacity: 0.4,
-          depthWrite: false,
-          sizeAttenuation: true,
-        })
-      );
-      scene.add(dust);
-
-      scene.add(new THREE.AmbientLight(0xb8c4bc, 0.55));
-      const key = new THREE.DirectionalLight(0xffffff, 1.35);
-      key.position.set(4, 5, 6);
-      scene.add(key);
-      const fill = new THREE.DirectionalLight(0xd4b896, 0.45);
-      fill.position.set(-5, -1, 3);
-      scene.add(fill);
-      const rim = new THREE.PointLight(0x9fd8c3, 1.8, 24);
-      rim.position.set(2, 2, 3);
-      scene.add(rim);
-
-      const isMobile = window.innerWidth <= 720;
-      const state = {
-        camX: isMobile ? 0 : 0.8,
-        camY: 0.15,
-        camZ: 8.5,
-        rotY: -0.15,
-        rotX: 0.08,
-        worldX: isMobile ? 0.15 : 1.5,
-      };
-
-      const tl = gsap.timeline({
+    gsap.utils.toArray(".section .reveal").forEach((el) => {
+      gsap.to(el, {
+        opacity: 1,
+        y: 0,
+        duration: 0.75,
+        ease: "power2.out",
         scrollTrigger: {
-          trigger: ".content",
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.8,
+          trigger: el,
+          start: "top 88%",
         },
       });
+    });
 
-      tl.to(state, {
-        camX: isMobile ? 0.1 : -0.6,
-        camY: 0.45,
-        camZ: 6.8,
-        rotY: 0.55,
-        rotX: -0.12,
-        worldX: isMobile ? 0 : 0.4,
-        ease: "none",
-        duration: 1,
-      })
-        .to(state, {
-          camX: isMobile ? -0.1 : 0.9,
-          camY: -0.2,
-          camZ: 5.4,
-          rotY: 1.2,
-          rotX: 0.18,
-          worldX: isMobile ? 0.1 : -0.3,
-          ease: "none",
-          duration: 1,
-        })
-        .to(state, {
-          camX: 0,
-          camY: 0.25,
-          camZ: 4.2,
-          rotY: 1.85,
-          rotX: -0.05,
-          worldX: 0,
-          ease: "none",
-          duration: 1,
-        });
-
-      let t = 0;
-      function render() {
-        t += 0.004;
-
-        camera.position.x = state.camX + Math.sin(t * 0.35) * 0.06;
-        camera.position.y = state.camY + Math.cos(t * 0.28) * 0.04;
-        camera.position.z = state.camZ;
-        camera.lookAt(state.worldX * 0.4, 0, 0);
-
-        world.position.x = state.worldX;
-        world.rotation.y = state.rotY + t * 0.08;
-        world.rotation.x = state.rotX + Math.sin(t * 0.4) * 0.03;
-
-        ribbonA.rotation.z = Math.sin(t * 0.3) * 0.08;
-        ribbonB.rotation.z = Math.cos(t * 0.25) * 0.1;
-        ribbonC.rotation.z = Math.sin(t * 0.2 + 1) * 0.06;
-
-        dust.rotation.y = t * 0.04;
-
-        renderer.render(scene, camera);
-        requestAnimationFrame(render);
-      }
-      render();
-
-      window.addEventListener("resize", () => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setSize(w, h);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        ScrollTrigger.refresh();
-      });
-    }
+    const nav = document.querySelector(".nav");
+    ScrollTrigger.create({
+      trigger: "#trabalho",
+      start: "top 70px",
+      onEnter: () => {
+        nav.style.mixBlendMode = "normal";
+        nav.style.color = "#141814";
+      },
+      onLeaveBack: () => {
+        nav.style.mixBlendMode = "difference";
+        nav.style.color = "#f7f4ee";
+      },
+    });
   </script>
 </body>
 </html>
