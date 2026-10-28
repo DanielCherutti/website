@@ -356,13 +356,18 @@
     }
 
     .reveal {
+      opacity: 1;
+      transform: none;
+    }
+
+    html.js .section .reveal {
       opacity: 0;
-      transform: translateY(28px);
+      transform: translateY(24px);
     }
 
     @media (prefers-reduced-motion: reduce) {
       .hero-plane::before { animation: none; }
-      .reveal { opacity: 1; transform: none; }
+      html.js .section .reveal { opacity: 1; transform: none; }
     }
   </style>
 </head>
@@ -489,43 +494,47 @@
   </footer>
 
   <script>
-    gsap.registerPlugin(ScrollTrigger);
+    document.documentElement.classList.add("js");
 
-    gsap.to(".hero .reveal", {
-      opacity: 1,
-      y: 0,
-      duration: 0.9,
-      stagger: 0.1,
-      ease: "power3.out",
-      delay: 0.08,
-    });
+    if (typeof gsap !== "undefined") {
+      gsap.registerPlugin(ScrollTrigger);
 
-    gsap.utils.toArray(".section .reveal").forEach((el) => {
-      gsap.to(el, {
-        opacity: 1,
-        y: 0,
-        duration: 0.75,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: el,
-          start: "top 88%",
+      gsap.from(".hero .reveal", {
+        opacity: 0,
+        y: 22,
+        duration: 0.85,
+        stagger: 0.09,
+        ease: "power3.out",
+        delay: 0.05,
+      });
+
+      gsap.utils.toArray(".section .reveal").forEach((el) => {
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 88%",
+          },
+        });
+      });
+
+      const nav = document.querySelector(".nav");
+      ScrollTrigger.create({
+        trigger: "#trabalho",
+        start: "top 70px",
+        onEnter: () => {
+          nav.style.mixBlendMode = "normal";
+          nav.style.color = "#141814";
+        },
+        onLeaveBack: () => {
+          nav.style.mixBlendMode = "difference";
+          nav.style.color = "#f7f4ee";
         },
       });
-    });
-
-    const nav = document.querySelector(".nav");
-    ScrollTrigger.create({
-      trigger: "#trabalho",
-      start: "top 70px",
-      onEnter: () => {
-        nav.style.mixBlendMode = "normal";
-        nav.style.color = "#141814";
-      },
-      onLeaveBack: () => {
-        nav.style.mixBlendMode = "difference";
-        nav.style.color = "#f7f4ee";
-      },
-    });
+    }
   </script>
 </body>
 </html>
