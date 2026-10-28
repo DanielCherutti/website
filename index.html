@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scrollytelling 3D · Daniel Cherutti</title>
-  <meta name="description" content="Demo de scrollytelling 3D com Three.js e GSAP ScrollTrigger." />
+  <title>Daniel Cherutti · Dev & Infra</title>
+  <meta name="description" content="Daniel Cherutti — developer + infra. Código e infraestrutura que sustentam o negócio: produto, telefonia, CRM e operação." />
+  <meta name="author" content="Daniel Cherutti" />
 
-  <!-- Tipografia: display geométrico + texto legível -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Three.js UMD (0.160 ainda publica three.min.js; 0.170+ removeu o build UMD) -->
+  <!-- Three.js UMD (0.160) + GSAP ScrollTrigger -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <!-- GSAP + ScrollTrigger -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 
@@ -24,19 +23,14 @@
       --muted: #9aa8a0;
       --accent: #3fd0a8;
       --accent-2: #f0a35e;
-      --panel: rgba(12, 18, 22, 0.55);
+      --panel: rgba(12, 18, 22, 0.58);
       --line: rgba(232, 238, 233, 0.12);
+      --soft: rgba(232, 238, 233, 0.06);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html {
-      scroll-behavior: auto; /* ScrollTrigger controla o ritmo */
-    }
+    html { scroll-behavior: auto; }
 
     body {
       font-family: "Space Grotesk", system-ui, sans-serif;
@@ -46,7 +40,11 @@
       min-height: 100vh;
     }
 
-    /* Canvas 3D fixo atrás de todo o conteúdo */
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
     #webgl {
       position: fixed;
       inset: 0;
@@ -57,16 +55,15 @@
       pointer-events: none;
     }
 
-    /* Atmosfera sutil atrás/sobre o canvas (sem roubar o 3D) */
     .atmosphere {
       position: fixed;
       inset: 0;
       z-index: 1;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 70% 50% at 20% 20%, rgba(63, 208, 168, 0.12), transparent 55%),
-        radial-gradient(ellipse 60% 45% at 85% 70%, rgba(240, 163, 94, 0.10), transparent 50%),
-        linear-gradient(180deg, rgba(11, 15, 18, 0.15), rgba(11, 15, 18, 0.55));
+        radial-gradient(ellipse 70% 50% at 18% 18%, rgba(63, 208, 168, 0.11), transparent 55%),
+        radial-gradient(ellipse 55% 40% at 88% 72%, rgba(240, 163, 94, 0.09), transparent 50%),
+        linear-gradient(180deg, rgba(11, 15, 18, 0.12), rgba(11, 15, 18, 0.62));
     }
 
     .content {
@@ -81,99 +78,212 @@
       padding: clamp(2rem, 6vw, 5rem);
     }
 
+    section.hero {
+      align-items: flex-end;
+      padding-bottom: clamp(3rem, 10vh, 6rem);
+    }
+
+    .brand {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.8rem, 9vw, 6.2rem);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.55rem;
+    }
+
+    .brand span {
+      color: var(--accent);
+    }
+
+    .seal {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.1rem;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.35rem, 3.4vw, 2.1rem);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      max-width: 18ch;
+      margin-bottom: 0.85rem;
+    }
+
+    h2 {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.7rem, 4.2vw, 2.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.75rem;
+    }
+
+    .kicker {
+      font-size: 0.76rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+
+    .lead, .panel p, .stack-group p {
+      color: var(--muted);
+      font-size: clamp(1rem, 2.1vw, 1.12rem);
+      line-height: 1.65;
+      max-width: 38ch;
+    }
+
+    .accent-word { color: var(--accent-2); }
+
+    .hero-copy {
+      max-width: min(34rem, 92vw);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.6rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.78rem 1.25rem;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0b0f12;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #62dcb8;
+      border-color: #62dcb8;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     .panel {
       max-width: min(36rem, 92vw);
-      padding: 1.75rem 1.85rem;
+      padding: 1.6rem 1.7rem;
       background: var(--panel);
       border: 1px solid var(--line);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
 
-    .panel.right {
-      margin-left: auto;
+    .panel.right { margin-left: auto; }
+
+    .panel ul {
+      margin-top: 0.9rem;
+      list-style: none;
+      display: grid;
+      gap: 0.35rem;
     }
 
-    .kicker {
-      font-size: 0.78rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+    .panel li {
+      color: var(--ink);
+      font-size: 0.95rem;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .panel li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 0.4rem;
+      height: 0.4rem;
+      background: var(--accent);
+    }
+
+    .stack-wrap {
+      width: min(52rem, 100%);
+      display: grid;
+      gap: 1rem;
+    }
+
+    .stack-group {
+      padding: 1.25rem 1.4rem;
+      border: 1px solid var(--line);
+      background: var(--soft);
+    }
+
+    .stack-group h3 {
+      font-family: "Syne", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.45rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.7rem;
+    }
+
+    .tags span {
+      font-size: 0.82rem;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      padding: 0.28rem 0.55rem;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 1.3rem;
+    }
+
+    .contact-links a {
+      border-bottom: 1px solid var(--accent);
+      padding-bottom: 0.1rem;
       color: var(--accent);
-      margin-bottom: 0.85rem;
       font-weight: 600;
     }
 
-    h1, h2 {
-      font-family: "Syne", sans-serif;
-      font-weight: 800;
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-    }
-
-    h1 {
-      font-size: clamp(2.4rem, 7vw, 4.6rem);
-      margin-bottom: 1rem;
-    }
-
-    h2 {
-      font-size: clamp(1.8rem, 4.5vw, 3rem);
-      margin-bottom: 0.85rem;
-    }
-
-    p {
-      color: var(--muted);
-      font-size: clamp(1rem, 2.2vw, 1.15rem);
-      line-height: 1.65;
-      max-width: 34ch;
-    }
-
-    .accent-word {
-      color: var(--accent-2);
-    }
-
-    .scroll-hint {
-      margin-top: 1.4rem;
-      font-size: 0.85rem;
-      color: var(--ink);
-      opacity: 0.7;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-    }
-
-    .scroll-hint::before {
-      content: "";
-      width: 1px;
-      height: 1.6rem;
-      background: var(--accent);
-      animation: pulse 1.6s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.25; transform: scaleY(0.7); }
-      50% { opacity: 1; transform: scaleY(1); }
-    }
+    .contact-links a:hover { color: var(--accent-2); border-color: var(--accent-2); }
 
     footer {
       position: relative;
       z-index: 2;
-      padding: 2rem;
+      padding: 1.5rem 2rem 2rem;
       text-align: center;
       color: var(--muted);
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       border-top: 1px solid var(--line);
-      background: rgba(11, 15, 18, 0.65);
-    }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
+      background: rgba(11, 15, 18, 0.72);
     }
 
     @media (max-width: 700px) {
       section {
         align-items: flex-end;
-        padding-bottom: 12vh;
+        padding-bottom: 11vh;
+      }
+
+      section.hero {
+        align-items: flex-end;
       }
 
       .panel,
@@ -185,76 +295,184 @@
   </style>
 </head>
 <body>
-  <!-- Camada 3D (Three.js desenha aqui) -->
   <canvas id="webgl" aria-hidden="true"></canvas>
   <div class="atmosphere" aria-hidden="true"></div>
 
-  <div class="content">
-    <!-- Seção 1 — introdução -->
-    <section id="intro">
-      <div class="panel">
-        <p class="kicker">Scrollytelling 3D</p>
-        <h1>Forma em<br />movimento</h1>
-        <p>
-          Role a página. O objeto 3D no fundo responde ao scroll —
-          posição, rotação e câmera — no espírito de sites como
-          <span class="accent-word">Lusion</span>.
+  <main class="content">
+    <!-- 1) Hero -->
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <p class="seal">Daniel Tech</p>
+        <p class="brand">Daniel<br />Cherutti<span>.</span></p>
+        <h1>Código e infra que sustentam o negócio.</h1>
+        <p class="lead">
+          Developer + infra — do deploy à VM, do PABX ao produto.
         </p>
-        <div class="scroll-hint">desça para continuar</div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#trabalho">Ver trabalho</a>
+          <a class="btn btn-ghost" href="#contato">Contato</a>
+        </div>
       </div>
     </section>
 
-    <!-- Seção 2 — deslocamento lateral -->
-    <section id="shift">
+    <!-- 2) Trabalho — 4 cases -->
+    <section id="trabalho">
+      <div class="panel">
+        <p class="kicker">01 · Produto</p>
+        <h2>Filmavys</h2>
+        <p>
+          Produto full-stack sob pressão real: app + API, WhatsApp com workers,
+          billing, social publishing e operação contínua em produção.
+        </p>
+        <ul>
+          <li>TypeScript end-to-end (API Nest-style + app)</li>
+          <li>Filas, workers e canais de notificação</li>
+          <li>Entrega em ciclo curto com review e deploy</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="telefonia">
       <div class="panel right">
-        <p class="kicker">02 · Trajetória</p>
-        <h2>Do centro<br />para a margem</h2>
+        <p class="kicker">02 · Omnichannel</p>
+        <h2>Telefonia que escala</h2>
         <p>
-          Conforme o scroll avança, a geometria desliza no eixo X
-          e gira em múltiplos eixos, amarrada ao progresso do ScrollTrigger.
+          Omnichannel e PABX no dia a dia: FreeSWITCH, New Omni, filas,
+          webphone e provisionamento de telefones IP — onde a ligação
+          precisa fechar com o sistema.
+        </p>
+        <ul>
+          <li>Rotas, filas, transferências e integrações</li>
+          <li>Provisionamento de endpoints IP</li>
+          <li>Diagnóstico de rede e VMs em produção</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="crm">
+      <div class="panel">
+        <p class="kicker">03 · Integrações</p>
+        <h2>CRM no fluxo certo</h2>
+        <p>
+          Pontes entre telefonia, CRM e operação comercial — Syonet,
+          discagem, leads e sistemas sob medida para o negócio fechar
+          o ciclo sem gambiarra.
+        </p>
+        <ul>
+          <li>Integrações Syonet e fluxos de lead</li>
+          <li>CRM e automações para concessionárias</li>
+          <li>APIs que ligam voz, chat e cadastro</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="infra">
+      <div class="panel right">
+        <p class="kicker">04 · Operação</p>
+        <h2>Infra que aguenta</h2>
+        <p>
+          Proxmox, VMs, monitoramento, VPN e automação — o lado que
+          ninguém vê até cair. Eu fico nos dois lados: código e máquina.
+        </p>
+        <ul>
+          <li>Hypervisor, backup e rede</li>
+          <li>Monitoramento de telas e serviços</li>
+          <li>Docker, Linux e troubleshooting real</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3) Stack -->
+    <section id="stack">
+      <div class="stack-wrap">
+        <div>
+          <p class="kicker">Stack</p>
+          <h2>Ferramentas que uso de verdade</h2>
+          <p>Sem parede de badges — o que aparece no trabalho diário.</p>
+        </div>
+
+        <div class="stack-group">
+          <h3>Linguagens</h3>
+          <p>Go, TypeScript, Python, PHP, C#, Bash — o que o problema pedir.</p>
+          <div class="tags">
+            <span>Go</span><span>TypeScript</span><span>Python</span>
+            <span>PHP</span><span>.NET / C#</span><span>Bash</span>
+          </div>
+        </div>
+
+        <div class="stack-group">
+          <h3>Plataformas</h3>
+          <p>Produto web, omnichannel e automações de negócio.</p>
+          <div class="tags">
+            <span>Node.js</span><span>Vue / Quasar</span><span>React</span>
+            <span>FreeSWITCH</span><span>PostgreSQL</span><span>Redis</span>
+          </div>
+        </div>
+
+        <div class="stack-group">
+          <h3>Infra & DevOps</h3>
+          <p>Da VM ao container, com olho em uptime e deploy.</p>
+          <div class="tags">
+            <span>Proxmox</span><span>Docker</span><span>Linux</span>
+            <span>VMware</span><span>Nginx</span><span>AWS</span>
+            <span>Kubernetes</span><span>Grafana</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4) Sobre -->
+    <section id="sobre">
+      <div class="panel">
+        <p class="kicker">Sobre</p>
+        <h2>Entre o código<br />e a máquina</h2>
+        <p>
+          Sou o cara que liga o sistema ao servidor — e o servidor ao
+          negócio. Brasil, <span class="accent-word">Daniel Tech</span>:
+          soluções para empresas que precisam de software que sobe e
+          infra que aguenta.
+        </p>
+        <p style="margin-top: 0.85rem;">
+          Agora aprofundando Kubernetes, AWS, Go e .NET — sem largar
+          o chão de produção.
         </p>
       </div>
     </section>
 
-    <!-- Seção 3 — aproximação da câmera -->
-    <section id="focus">
-      <div class="panel">
-        <p class="kicker">03 · Zoom</p>
-        <h2>A câmera<br />se aproxima</h2>
+    <!-- 5) Contato -->
+    <section id="contato">
+      <div class="panel right">
+        <p class="kicker">Contato</p>
+        <h2>Vamos falar</h2>
         <p>
-          No final do percurso, um leve zoom aproxima o olhar
-          do Torus Knot — volume, luz e detalhe em primeiro plano.
+          Projeto, integração, infra ou produto — me chama onde você
+          já estiver.
         </p>
+        <div class="contact-links">
+          <a href="https://github.com/DanielCherutti" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://www.linkedin.com/in/daniel-machado-739180180/" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://instagram.com/daniel.tech" target="_blank" rel="noopener">Instagram</a>
+        </div>
       </div>
     </section>
-  </div>
+  </main>
 
   <footer>
-    Demo local / GitHub Pages ·
-    <a href="https://github.com/DanielCherutti/website" target="_blank" rel="noopener">DanielCherutti/website</a>
+    Daniel Cherutti · Brasil ·
+    <a href="https://github.com/DanielCherutti/website" target="_blank" rel="noopener">código deste site</a>
   </footer>
 
   <script>
     /**
-     * =========================================================
-     * Scrollytelling 3D — Three.js + GSAP ScrollTrigger
-     * Arquivo único: abra direto no navegador (file:// ou Pages)
-     * =========================================================
+     * Portfólio — Three.js + GSAP ScrollTrigger
+     * CDN Three 0.160 (UMD). Timeline longa alinhada às seções.
      */
-
-    // Guarda: se o CDN falhar, avisa no console em vez de quebrar em silêncio
     if (typeof THREE === "undefined" || typeof gsap === "undefined") {
-      console.error("Libs não carregaram. Confira os CDNs de Three.js / GSAP.");
+      console.error("Libs não carregaram. Confira CDNs Three.js / GSAP.");
     } else {
-      // Registra o plugin de scroll do GSAP
       gsap.registerPlugin(ScrollTrigger);
 
-      /* -------------------------
-       * 1) Setup básico Three.js
-       * ------------------------- */
       const canvas = document.getElementById("webgl");
-
-      // Renderer: usa o canvas full-viewport e liga antialias
       const renderer = new THREE.WebGLRenderer({
         canvas,
         antialias: true,
@@ -262,9 +480,8 @@
       });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x000000, 0); // transparente — o CSS cuida do fundo
+      renderer.setClearColor(0x000000, 0);
 
-      // Cena e câmera perspectiva
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(
         45,
@@ -272,16 +489,9 @@
         0.1,
         100
       );
-      // Distância inicial (z). ScrollTrigger vai animar esse valor depois.
-      camera.position.set(0, 0.15, 5.2);
+      camera.position.set(0, 0.15, 5.4);
 
-      /* -------------------------
-       * 2) Objeto 3D central
-       * ------------------------- */
-      // TorusKnot: forma rica em silhueta (bom para scrollytelling)
       const geometry = new THREE.TorusKnotGeometry(1.15, 0.38, 240, 32);
-
-      // Material claro + emissive pra ficar legível no fundo escuro
       const material = new THREE.MeshStandardMaterial({
         color: 0xeaf6f0,
         metalness: 0.35,
@@ -289,27 +499,22 @@
         emissive: 0x1a4a3a,
         emissiveIntensity: 0.35,
       });
-
       const mesh = new THREE.Mesh(geometry, material);
       scene.add(mesh);
 
-      // Wireframe por cima — reforça o look "creative coding"
-      const wire = new THREE.Mesh(
-        geometry,
-        new THREE.MeshBasicMaterial({
-          color: 0x3fd0a8,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.22,
-        })
+      mesh.add(
+        new THREE.Mesh(
+          geometry,
+          new THREE.MeshBasicMaterial({
+            color: 0x3fd0a8,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2,
+          })
+        )
       );
-      mesh.add(wire);
 
-      /* -------------------------
-       * 3) Iluminação com volume
-       * ------------------------- */
-      const ambient = new THREE.AmbientLight(0xc8ddd4, 0.7);
-      scene.add(ambient);
+      scene.add(new THREE.AmbientLight(0xc8ddd4, 0.7));
 
       const key = new THREE.DirectionalLight(0xffffff, 1.8);
       key.position.set(4, 6, 5);
@@ -323,82 +528,62 @@
       rim.position.set(-2, 3, -3);
       scene.add(rim);
 
-      /* -------------------------
-       * 4) Scroll → estado 3D
-       * -------------------------
-       * Proxy (`scrollState`) interpolado pelo GSAP conforme o scroll.
-       * O loop de render só lê esses valores a cada frame.
-       */
       const isMobile = window.innerWidth <= 700;
       const scrollState = {
-        posX: 0,
-        posY: 0,
+        posX: isMobile ? 0.15 : 1.1,
+        posY: 0.1,
         rotX: 0.35,
         rotY: 0.55,
-        camZ: 5.2,
+        camZ: 5.4,
       };
 
-      // Amplitudes maiores no desktop pra o efeito ser óbvio
-      const path = isMobile
-        ? [
-            { posX: 0.7, posY: 0.55, rotX: Math.PI * 1.0, rotY: Math.PI * 1.6, camZ: 4.6 },
-            { posX: -0.55, posY: -0.2, rotX: Math.PI * 1.9, rotY: Math.PI * 2.8, camZ: 3.4 },
-          ]
-        : [
-            { posX: 2.4, posY: 0.45, rotX: Math.PI * 1.1, rotY: Math.PI * 1.8, camZ: 4.4 },
-            { posX: -2.2, posY: -0.25, rotX: Math.PI * 2.0, rotY: Math.PI * 3.0, camZ: 2.9 },
-          ];
+      // Trajetória por fase (hero → 4 cases → stack → sobre → contato)
+      const amp = isMobile ? 0.55 : 1;
+      const path = [
+        { posX: 1.2 * amp, posY: 0.2, rotX: Math.PI * 0.55, rotY: Math.PI * 0.9, camZ: 5.0 },
+        { posX: 2.1 * amp, posY: 0.35, rotX: Math.PI * 1.0, rotY: Math.PI * 1.5, camZ: 4.5 },
+        { posX: -1.9 * amp, posY: -0.1, rotX: Math.PI * 1.4, rotY: Math.PI * 2.1, camZ: 4.0 },
+        { posX: 1.7 * amp, posY: 0.4, rotX: Math.PI * 1.8, rotY: Math.PI * 2.6, camZ: 3.6 },
+        { posX: -1.4 * amp, posY: -0.2, rotX: Math.PI * 2.2, rotY: Math.PI * 3.1, camZ: 3.3 },
+        { posX: 0.9 * amp, posY: 0.15, rotX: Math.PI * 2.5, rotY: Math.PI * 3.5, camZ: 3.8 },
+        { posX: -0.6 * amp, posY: 0.05, rotX: Math.PI * 2.9, rotY: Math.PI * 4.0, camZ: 3.2 },
+      ];
 
-      // Timeline amarrada ao scroll da página inteira
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: ".content",
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.6, // resposta mais direta ao scroll
+          scrub: 0.65,
         },
       });
 
-      // Fase 1: centro → lado + giro
-      tl.to(scrollState, { ...path[0], ease: "none", duration: 1 });
-      // Fase 2: cruza + zoom da câmera
-      tl.to(scrollState, { ...path[1], ease: "none", duration: 1 });
+      path.forEach((step) => {
+        tl.to(scrollState, { ...step, ease: "none", duration: 1 });
+      });
 
-      /* -------------------------
-       * 5) Loop de render
-       * ------------------------- */
       let idle = 0;
-
       function render() {
-        idle += 0.008;
-
+        idle += 0.007;
         mesh.position.x = scrollState.posX;
-        mesh.position.y = scrollState.posY + Math.sin(idle) * 0.12;
-        mesh.rotation.x = scrollState.rotX + idle * 0.35;
-        mesh.rotation.y = scrollState.rotY + idle * 0.55;
+        mesh.position.y = scrollState.posY + Math.sin(idle) * 0.1;
+        mesh.rotation.x = scrollState.rotX + idle * 0.28;
+        mesh.rotation.y = scrollState.rotY + idle * 0.45;
         camera.position.z = scrollState.camZ;
-
         renderer.render(scene, camera);
         requestAnimationFrame(render);
       }
       render();
 
-      /* -------------------------
-       * 6) Responsividade
-       * ------------------------- */
       function onResize() {
         const w = window.innerWidth;
         const h = window.innerHeight;
-
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(w, h);
-
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
-
         ScrollTrigger.refresh();
       }
-
       window.addEventListener("resize", onResize);
     }
   </script>
